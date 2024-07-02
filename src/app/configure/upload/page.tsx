@@ -1,15 +1,24 @@
 "use client";
 
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { Image, Loader2, MousePointerSquareDashed } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import DropZone, { FileRejection } from "react-dropzone";
 
 const Page = () => {
+  //#region "Component State"
   const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(45);
   const isUploading = false;
+  const [isPending] = useTransition();
+  //#endregion
+
+  //#region "Functions"
   const onDropRejected = () => {};
   const onDropAccepted = () => {};
+  //#endregion
+
   return (
     <div
       className={cn(
@@ -43,6 +52,33 @@ const Page = () => {
                 <Loader2 className="animate-spin h-6 w-6 text-zinc-500 mb-2" />
               ) : (
                 <Image className="h-6 w-6 text-zinc-500 mb-2" />
+              )}
+
+              {isUploading ? (
+                <div className="flex flex-col items-center">
+                  <p>Uploading...</p>
+                  <Progress
+                    value={uploadProgress}
+                    className="mt-2 w-40 h-2 bg-gray-300"
+                  />
+                </div>
+              ) : isPending ? (
+                <div className="flex flex-col items-center">
+                  <p>Redirecting, please wait...</p>
+                </div>
+              ) : isDragOver ? (
+                <p>
+                  <span className="font-semibold">Drop file</span> to upload
+                </p>
+              ) : (
+                <p>
+                  <span>Click to upload </span>
+                  or drag and drop
+                </p>
+              )}
+
+              {isPending ? null : (
+                <p className="text-zinc-500 text-xs">PNG, JPG, JPEG</p>
               )}
             </div>
           )}
