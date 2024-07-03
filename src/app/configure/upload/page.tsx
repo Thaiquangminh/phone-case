@@ -1,8 +1,11 @@
 "use client";
 
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
+import { useUploadThing } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
 import { Image, Loader2, MousePointerSquareDashed } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import DropZone, { FileRejection } from "react-dropzone";
 
@@ -10,13 +13,41 @@ const Page = () => {
   //#region "Component State"
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(45);
-  const isUploading = false;
-  const [isPending] = useTransition();
+  const [isPending, startTransition] = useTransition();
+
+  const router = useRouter();
+  const { toast } = useToast();
+
+  // Handle upload to upload thing server
+  const { startUpload, isUploading } = useUploadThing("imageUploader", {
+    onClientUploadComplete: ([data]) => {
+      const configId = data.serverData.configId;
+      startTransition(() => {
+        router.push(`configure/design?id=${configId}`);
+      });
+    },
+    onUploadProgress(p) {
+      setUploadProgress(p);
+    },
+  });
   //#endregion
 
   //#region "Functions"
-  const onDropRejected = () => {};
-  const onDropAccepted = () => {};
+  const onDropRejected = (rejectedFiles: FileRejection[]) => {
+    const [file] = rejectedFiles;
+    setIsDragOver(false);
+
+    toast({
+      title: `${file.file.type} type is not supported.`,
+      description: "Please choose a PNG, JPG, or JPEG image instead.",
+      variant: "destructive",
+    });
+  };
+
+  const onDropAccepted = (acceptedFiles: File[]) => {
+    startUpload(acceptedFiles, { configId: undefined });
+    setIsDragOver(false);
+  };
   //#endregion
 
   return (
@@ -78,7 +109,7 @@ const Page = () => {
               )}
 
               {isPending ? null : (
-                <p className="text-zinc-500 text-xs">PNG, JPG, JPEG</p>
+                <p className="text-zinc-500 text-xs mt-1">PNG, JPG, JPEG</p>
               )}
             </div>
           )}
