@@ -12,7 +12,7 @@ import DropZone, { FileRejection } from "react-dropzone";
 const Page = () => {
   //#region "Component State"
   const [isDragOver, setIsDragOver] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(45);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
